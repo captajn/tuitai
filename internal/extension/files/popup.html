@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <title>Tui Download</title>
+    <style>
+      body { font: 13px/1.4 system-ui, sans-serif; width: 340px; margin: 12px; }
+      h1 { font-size: 14px; margin: 0 0 8px; }
+      textarea { width: 100%; height: 64px; box-sizing: border-box; font: inherit; }
+      button { margin-top: 6px; padding: 4px 10px; font: inherit; cursor: pointer; }
+      #msg { margin-top: 8px; color: #444; min-height: 1.2em; }
+      .row { display: flex; gap: 8px; }
+    </style>
+  </head>
+  <body>
+    <h1>Tui Download</h1>
+    <textarea id="url" placeholder="Dán URL (mỗi dòng một link)"></textarea>
+    <div class="row">
+      <button id="send">Gửi</button>
+      <button id="page">Lấy link trang này</button>
+      <button id="health">Kiểm tra daemon</button>
+    </div>
+    <div id="msg"></div>
+    <script src="popup.js"></script>
+  </body>
+</html>

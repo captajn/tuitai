@@ -1,0 +1,24 @@
+﻿name: guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  no-junk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Chặn binary và file tạm bị commit nhầm
+        run: |
+          set -e
+          bad=$(git ls-files | grep -Ei '(^|/)[^/]*~$|\.exe~$|\.(exe|dll|so|dylib|pdb|bak|tmp|log)$|(^|/)dist/' || true)
+          if [ -n "$bad" ]; then
+            echo "::error::Các file không được commit:"; echo "$bad"; exit 1
+          fi
+          big=$(git ls-files -z | xargs -0 -I{} sh -c 'test -f "{}" && echo "$(wc -c <"{}") {}"' | awk '$1 > 6000000 {print}' || true)
+          if [ -n "$big" ]; then
+            echo "::error::File > 6MB trong repo:"; echo "$big"; exit 1
+          fi
+          echo "OK: không có binary/file tạm."

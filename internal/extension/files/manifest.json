@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Tui Download — gửi link",
+  "version": "1.0.0",
+  "description": "Gửi link đang xem hoặc link trên trang sang trình tải Tui Download (tuitai daemon).",
+  "permissions": ["contextMenus", "activeTab", "scripting", "storage", "clipboardRead"],
+  "host_permissions": ["http://127.0.0.1/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "Gửi sang Tui Download", "default_popup": "popup.html" },
+  "options_page": "options.html",
+  "icons": {}
+}

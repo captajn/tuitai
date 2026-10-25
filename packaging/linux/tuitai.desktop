@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Tui Tải
+Name[en]=Tui Tai
+Comment=Trình quản lý tải xuống đa kết nối
+Comment[en]=Multi-connection download manager
+Exec=tuitai gui
+Icon=tuitai
+Terminal=false
+Categories=Network;FileTransfer;Utility;
+Keywords=download;manager;hls;

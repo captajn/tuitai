@@ -1,0 +1,161 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Phiên bản (v.d. v0.0.1)"
+        required: true
+        default: "v0.0.0-dev"
+      publish:
+        description: "Tạo Release công khai? (false = chỉ build artifact để test)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  portable:
+    name: portable ${{ matrix.goos }}-${{ matrix.goarch }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, goos: windows, goarch: amd64, kind: exe }
+          - { os: windows-latest, goos: windows, goarch: arm64, kind: exe }
+          - { os: ubuntu-latest,  goos: linux,   goarch: amd64, kind: tar }
+          - { os: ubuntu-latest,  goos: linux,   goarch: arm64, kind: tar }
+          - { os: macos-latest,   goos: darwin,  goarch: amd64, kind: app }
+          - { os: macos-latest,   goos: darwin,  goarch: arm64, kind: app }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          check-latest: true
+      - name: Version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+          fi
+          echo "Dùng version: ${{ github.event_name }}"
+      - name: Build binary
+        shell: bash
+        env:
+          CGO_ENABLED: "0"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          mkdir -p dist
+          go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" \
+            -o "dist/tuitai-${GOOS}-${GOARCH}${{ matrix.kind == 'exe' && '.exe' || '' }}" ./cmd/tuitai
+      - name: Package (linux tar.gz)
+        if: matrix.kind == 'tar'
+        shell: bash
+        run: |
+          cd dist
+          f="tuitai-${{ matrix.goos }}-${{ matrix.goarch }}"
+          cp ../packaging/linux/tuitai.desktop .
+          cp ../internal/assets/app-icon-1024.png tuitai.png
+          tar -czf "${f}.tar.gz" "$f" tuitai.desktop tuitai.png
+          rm -f tuitai.desktop tuitai.png "$f"
+      - name: Package (macOS .app)
+        if: matrix.kind == 'app'
+        shell: bash
+        run: |
+          chmod +x packaging/macos/make-app.sh
+          ./packaging/macos/make-app.sh "dist/tuitai-${{ matrix.goos }}-${{ matrix.goarch }}" "$VERSION" dist
+          cd dist
+          tar -czf "tuitai-${{ matrix.goos }}-${{ matrix.goarch }}.app.tar.gz" "Tui Tai.app"
+          rm -rf "Tui Tai.app" "tuitai-${{ matrix.goos }}-${{ matrix.goarch }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pkg-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
+          if-no-files-found: error
+
+  windows-setup:
+    name: setup windows
+    needs: portable
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: pkg-windows-amd64
+          path: staging
+      - name: Version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+          fi
+      - name: Stage installer files
+        shell: pwsh
+        run: |
+          Copy-Item staging/tuitai-windows-amd64.exe staging/tuitai.exe
+          Copy-Item packaging/windows/tuitai.ico staging/
+          Copy-Item LICENSE,README.md staging/
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+      - name: Compile installer
+        shell: pwsh
+        run: |
+          $ver = $env:VERSION
+          if (-not $ver) { $ver = "${{ inputs.version }}" }
+          $stage = Join-Path $env:GITHUB_WORKSPACE "staging"
+          $icon = Join-Path $stage "tuitai.ico"
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          & $iscc "/DMyVersion=$ver" "/DMyDir=$stage" "/DMyIcon=$icon" "packaging\windows\tuitai.iss"
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item "packaging\windows\Output\tuitai-setup-$ver-x64.exe" dist/ -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pkg-setup-windows
+          path: dist/*
+          if-no-files-found: error
+
+  extension:
+    name: extension mv3
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zip extension
+        run: |
+          mkdir -p dist
+          cd internal/extension/files
+          zip -qr ../../../dist/tuitai-extension-mv3.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pkg-extension
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    # Chỉ chạy khi người duyệt tick "publish". Mặc định: chỉ build artifact.
+    if: ${{ inputs.publish }}
+    needs: [portable, windows-setup, extension]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Checksums
+        run: |
+          cd artifacts
+          sha256sum * | tee SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || inputs.version }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || inputs.version }}
+          generate_release_notes: true
+          files: artifacts/*

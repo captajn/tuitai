@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <title>Tui Download — tuỳ chọn</title>
+    <style>
+      body { font: 14px/1.5 system-ui, sans-serif; max-width: 460px; margin: 24px auto; }
+      label { display: block; margin: 10px 0 4px; }
+      input { width: 100%; padding: 4px 6px; font: inherit; box-sizing: border-box; }
+      button { margin-top: 14px; padding: 5px 14px; font: inherit; cursor: pointer; }
+      #status { margin-top: 10px; color: #2a7; }
+    </style>
+  </head>
+  <body>
+    <h1>Tuỳ chọn</h1>
+    <label for="port">Cổng daemon (mặc định 5555)</label>
+    <input id="port" type="number" min="1" max="65535" />
+    <label for="token">Token (bỏ trống nếu daemon không đặt --token)</label>
+    <input id="token" type="text" autocomplete="off" />
+    <button id="save">Lưu</button>
+    <div id="status"></div>
+    <p>
+      Nhớ chạy <code>tuitai daemon</code> trước. Extension chỉ gọi
+      <code>http://127.0.0.1</code>.
+    </p>
+    <script src="options.js"></script>
+  </body>
+</html>

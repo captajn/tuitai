@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tui Download logo">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2dd4bf"/>
+      <stop offset="0.55" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="gl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#0b3b3b" flood-opacity=".35"/>
+    </filter>
+  </defs>
+  <!-- squircle nền kính -->
+  <rect x="24" y="24" width="464" height="464" rx="132" fill="url(#g)" filter="url(#soft)"/>
+  <rect x="24" y="24" width="464" height="464" rx="132" fill="url(#gl)"/>
+  <rect x="24.5" y="24.5" width="463" height="463" rx="131.5" fill="none" stroke="#ffffff" stroke-opacity=".45" stroke-width="2"/>
+  <!-- mũi tên tải: thân + đầu -->
+  <g fill="#062a2f">
+    <rect x="216" y="118" width="80" height="150" rx="26"/>
+    <path d="M256 330c14 0 27-6 36-17l74-92c10-13 1-31-15-31h-58V178c0-9-7-16-16-16h-42c-9 0-16 7-16 16v12h-58c-16 0-25 18-15 31l74 92c9 11 22 17 36 17z"/>
+  </g>
+  <!-- khay hứng -->
+  <g fill="none" stroke="#062a2f" stroke-width="26" stroke-linecap="round">
+    <path d="M132 356v34c0 18 14 32 32 32h184c18 0 32-14 32-32v-34"/>
+  </g>
+  <!-- 3 chấm tốc độ -->
+  <g fill="#ffffff" fill-opacity=".85">
+    <circle cx="176" cy="404" r="10"/>
+    <circle cx="224" cy="404" r="10"/>
+    <circle cx="272" cy="404" r="10" fill-opacity=".45"/>
+  </g>
+</svg>

@@ -1,0 +1,31 @@
+﻿name: build-windows
+
+on:
+  # Chi build khi bam Run workflow. Khong tu build khi push.
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          check-latest: true
+      - name: Build tuitai.exe
+        env:
+          CGO_ENABLED: "0"
+          GOOS: windows
+          GOARCH: amd64
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          go build -trimpath -ldflags "-s -w -X main.version=${{ github.ref_name }}" -o dist/tuitai.exe ./cmd/tuitai
+          Get-FileHash dist/tuitai.exe -Algorithm SHA256 | ForEach-Object { "$($_.Hash)  tuitai.exe" } | Set-Content dist/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tuitai-windows-amd64
+          path: |
+            dist/tuitai.exe
+            dist/SHA256SUMS.txt
+          if-no-files-found: error

@@ -1,0 +1,38 @@
+﻿# binary & build
+/dist/
+/tuitai
+/tuitai.exe
+*.exe
+*.test
+*.out
+
+# hệ điều hành
+.DS_Store
+Thumbs.db
+
+# trình soạn thảo
+.idea/
+.vscode/
+*.swp
+
+# dữ liệu chạy thử
+queue.json
+*.tuidl
+*.part
+*.idmbak
+
+# file tạm/backup của Windows & editor
+*~
+*.exe~
+*.bak
+*.old
+*.orig
+*.tmp
+*.log
+desktop.ini
+*.pdb
+*.dll
+*.so
+*.dylib
+*.zip
+*.tar.gz
